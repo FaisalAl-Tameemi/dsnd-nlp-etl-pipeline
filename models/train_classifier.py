@@ -94,7 +94,7 @@ def tokenize(text, token_type='word', lemmatize=True, stem=False):
     return tokens
 
 
-def build_model():
+def build_model(gridsearch=True):
     """
     Builds an NLP pipeline to do teh following:
     1. Tokenize
@@ -103,6 +103,8 @@ def build_model():
     4. finally, a classifier
 
     The pipeline will also support methods such as .fit and .predict
+
+    Will also apply a grid search optionally.
     """
     pipeline = Pipeline([
         ('features', FeatureUnion([
@@ -116,6 +118,18 @@ def build_model():
 
         ('clf', MultiOutputClassifier(MultinomialNB()))
     ])
+
+    if gridsearch == True:
+        parameters = {
+            'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2), (1, 3)),
+            'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
+            'features__text_pipeline__vect__max_features': (None, 5000, 10000),
+            'features__text_pipeline__tfidf__use_idf': (True, False)
+        }
+
+        cv = GridSearchCV(pipeline, param_grid=parameters)
+
+        return cv
 
     return pipeline
 
