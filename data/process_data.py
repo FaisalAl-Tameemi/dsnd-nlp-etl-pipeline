@@ -19,6 +19,11 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    """
+    Performs the "load" part of the ETL pipeline. 
+    Given paths to 2 CSV files, one for messages and another for categories, load those files
+    into dataframes and then concatenate into a single dataframe.
+    """
     # read the csv files
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
@@ -34,6 +39,11 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """
+    Performs the "transform" part of the ETL pipeline.
+    Given a dataframe which contains both messages and categories, ensure that 
+    category fields are binary columns.
+    """
     # create a dataframe of the 36 individual category columns
     categories = df.categories.str.split(";", expand=True)
     
@@ -66,6 +76,9 @@ def clean_data(df):
 
 
 def save_data(df, database_filename, database_tablename='tweets'):
+    """
+    Saves a dataframe into a table in an sqlite file.
+    """
     engine = create_engine("sqlite:///{}".format(database_filename))
     df.to_sql(database_tablename, engine, index=False, if_exists='replace')
     return True

@@ -21,6 +21,10 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 nltk.download(['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger'])
 
 
+""""
+A custom extractor to be added to the NLP pipeline.
+This could help extend the list of features.
+"""
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
     def starting_verb(self, text):
         sentence_list = nltk.sent_tokenize(text)
@@ -40,6 +44,12 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
 
 def load_data(database_filepath, tablename='tweets'):
+    """
+    Given a path to a database file (sqlite), and an optional table name.
+    Load all the data from that table and turn it into a dataframe.
+
+    Split the data into features (X) and outputs (Y)
+    """
     # load data from database
     engine = create_engine("sqlite:///{}".format(database_filepath))
     df = pd.read_sql_table(tablename, engine)
@@ -85,6 +95,15 @@ def tokenize(text, token_type='word', lemmatize=True, stem=False):
 
 
 def build_model():
+    """
+    Builds an NLP pipeline to do teh following:
+    1. Tokenize
+    2. Vectorize (count then tfidf)
+    3. other custom extractors
+    4. finally, a classifier
+
+    The pipeline will also support methods such as .fit and .predict
+    """
     pipeline = Pipeline([
         ('features', FeatureUnion([
             ('text_pipeline', Pipeline([
@@ -102,6 +121,10 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """
+    A method to score a given model based on its predictions.
+    Scores are calculated per each prediction category.
+    """
     Y_preds = model.predict(X_test)
     
     true_df = pd.DataFrame(Y_test, columns=category_names)
@@ -122,6 +145,9 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
+    """"
+    Saves the classifier/pipeline to the disk
+    """
     with open(model_filepath, 'wb') as f:
         pkl.dump(model, f)
 
@@ -129,6 +155,9 @@ def save_model(model, model_filepath):
 
 
 def save_results(results, database_filename, database_tablename='results'):
+    """
+    Save a dataframe into the 'results' table of a database
+    """
     engine = create_engine("sqlite:///{}".format(database_filename))
     results.to_sql(database_tablename, engine, index=False, if_exists='replace')
     return True
