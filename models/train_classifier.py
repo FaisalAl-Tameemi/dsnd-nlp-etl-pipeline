@@ -15,7 +15,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, f1_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 
 nltk.download(['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger'])
@@ -134,13 +134,11 @@ def build_model(gridsearch=True):
     return pipeline
 
 
-def evaluate_model(model, X_test, Y_test, category_names):
+def evaluate_model(Y_test, Y_preds, category_names, binarize=False):
     """
     A method to score a given model based on its predictions.
     Scores are calculated per each prediction category.
     """
-    Y_preds = model.predict(X_test)
-    
     true_df = pd.DataFrame(Y_test, columns=category_names)
     preds_df = pd.DataFrame(Y_preds, columns=category_names)
 
